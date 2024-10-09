@@ -1,7 +1,10 @@
 name: Build CVs
 
-on: [push, pull_request, workflow_dispatch]
-
+on:
+  push:
+    # Pattern matched against refs/tags
+    tags:        
+      - '**' 
 jobs:
   checks:
     name: Build CVs
