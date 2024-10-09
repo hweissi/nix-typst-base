@@ -5,6 +5,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     utils.url = "github:numtide/flake-utils";
+
+    typst-packages = {
+      url = "github:typst/packages";
+      flake = false;
+    };
   };
 
   outputs = {
@@ -17,10 +22,40 @@
       system: let
         p = import nixpkgs {inherit system;};
         fonts = with p; [
-          fira
+          roboto
+          source-code-pro
+          font-awesome
+          source-sans
         ];
         fontPaths = (builtins.map (x: x + "/share/fonts/opentype") fonts) ++ (builtins.map (x: x + "/share/fonts/truetype") fonts) ++ [./fonts];
         fontParam = p.lib.concatStringsSep ":" fontPaths;
+
+        # You can use this if you only need to use official packages
+        # typstPackagesSrc = "${inputs.typst-packages}/packages";
+
+        typstPackagesCache = p.stdenv.mkDerivation {
+          name = "typst-packages-cache";
+          src = "${inputs.typst-packages}/packages";
+          dontBuild = true;
+          installPhase = ''
+            mkdir -p "$out/typst/packages"
+            cp -LR --reflink=auto --no-preserve=mode -t "$out/typst/packages" "$src"/*
+          '';
+        };
+
+        derivation = {stdenvNoCC, ...}:
+          stdenvNoCC.mkDerivation {
+            name = "main.typ";
+            src = ./.;
+            buildInputs = [p.typst] ++ fonts;
+            buildPhase = ''
+              XDG_CACHE_HOME=${typstPackagesCache} TYPST_FONT_PATHS=${fontParam} typst compile main.typ
+            '';
+            installPhase = ''
+              mkdir -p $out
+              cp main.pdf $out/main.pdf
+            '';
+          };
       in {
         devShell = p.mkShell.override {stdenv = p.stdenv;} rec {
           packages = with p;
@@ -30,12 +65,15 @@
               typst-live
             ]
             ++ fonts;
-
           shellHook = ''
             export TYPST_FONT_PATHS=${fontParam}
           '';
 
           name = "Typst build";
+        };
+
+        packages = {
+          default = p.callPackage derivation {};
         };
       }
     );

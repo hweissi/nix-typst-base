@@ -19,6 +19,7 @@
     "root": {
       "inputs": {
         "nixpkgs": "nixpkgs",
+        "typst-packages": "typst-packages",
         "utils": "utils"
       }
     },
@@ -34,6 +35,22 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "typst-packages": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1728462907,
+        "narHash": "sha256-Nr4frri+y/kylb22r0EnxZEMHfxdI0muISVVn5hs5Zs=",
+        "owner": "typst",
+        "repo": "packages",
+        "rev": "d0069f05812cef21aa5248398a8ec41889872bfe",
+        "type": "github"
+      },
+      "original": {
+        "owner": "typst",
+        "repo": "packages",
         "type": "github"
       }
     },
